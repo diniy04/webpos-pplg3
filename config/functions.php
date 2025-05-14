@@ -1,39 +1,132 @@
 <?php
-function getData($sql)
+function uploadimg($url = null)
 {
-  global $koneksi;
+    $namafile = $_FILES['image']['name'];
+    $ukuran = $_FILES['image']['size'];
+    $tmp = $_FILES['image']['tmp_name'];
 
-  $result = mysqli_query($koneksi, $sql);
-  $rows = [];
+    // validasi file gambar yang boleh di upload
+    $ekstensiGambarValid = ['jpg', 'jpeg', 'png', 'gif'];
+    $ekstensiGambar = explode('.', $namafile);
+    $ekstensiGambar = strtolower(end($ekstensiGambar));
+    if (!in_array($ekstensiGambar, $ekstensiGambarValid)) {
+        if ($url != null) {
+            echo '<script>
+            alert("file yang anda upload bukan gambar, data gagal diupdate");
+            document.location.href = "' . $url . '";
+            </script>';
+            die();
+        } else {
+            echo '<script>alert("file yang anda upload bukan gambar, data gagal ditambahkan !");</script>';
+            return false;
+        }
+    }
 
-  while ($row = mysqli_fetch_assoc($result)) {
-    $rows[] = $row;
-  }
-  return $rows;
+    //validasi ukuran gambar max 1MB
+    if ($ukuran > 1000000) {
+        if ($url != null) {
+            echo '<script>
+            alert("Ukuran gambar melebihi 1MB, data gagal diupdate");
+            document.location.href = "' . $url . '";
+            </script>';
+            die();
+        } else {
+            echo "<script>alert('Ukuran gambar tidak sesuai')</script>";
+            return false;
+        }
+    }
+
+    $namaFileBaru = rand(10, 1000) . '-' . $namafile;
+
+    move_uploaded_file($tmp, '../assets/image/' . $namaFileBaru);
+    return $namaFileBaru;
 }
 
-function uploadImg()
+function getData($sql)
 {
-  $namafile = $_FILES['image']['name'];
-  $ukuran = $_FILES['image']['size'];
-  $tmp = $_FILES['image']['tmp_name'];
+    global $koneksi;
 
-  // validasi file gambar
-  $ekstensiGambarValid = ['jpg', 'jpeg', 'png', 'gif'];
-  $ekstensiGambar = explode('.', $namafile);
-  $ekstensiGambar = strtolower(end($ekstensiGambar));
-  if (!in_array($ekstensiGambar, $ekstensiGambarValid)) {
-    echo '<script>alert("File yang anda upload bukan gambar, data gagal di simpan");</script>';
-    return false;
-  }
+    $result = mysqli_query($koneksi, $sql);
+    $rows = [];
 
-  //validasi ukuran gambar
-  if ($ukuran > 1000000) {
-    echo '<script>alert("Ukuran gambar melebihi 1 MB, data gagal di simpan");</script>';
-    return false;
-  }
+    while ($row = mysqli_fetch_assoc($result)) {
+        $rows[] = $row;
+    }
+    return $rows;
+}
 
-  $namaFileBaru = rand(10, 1000) . '-' . $namafile;
-  move_uploaded_file($tmp, '../assets/image/' . $namaFileBaru);
-  return $namaFileBaru;
+function userLogin()
+{
+    $userActive = $_SESSION['ssUserPOS'];
+    $dataUser = getData("SELECT * FROM tbl_user WHERE username = '$userActive'")[0];
+    return $dataUser;
+}
+
+function userMenu()
+{
+    //cek url yg aktif
+    $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $uri_segments = explode('/', $uri_path);
+    $menu = $uri_segments[2];
+    return $menu;
+}
+
+function menuHome()
+{
+    if (userMenu() == 'dashboard.php') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
+function menuSetting()
+{
+    if (userMenu() == 'user') {
+        $result = 'menu-is-opening menu-open';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
+function menuUser()
+{
+    if (userMenu() == 'user') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
+function menuMaster()
+{
+    if (userMenu() == 'supplier' or userMenu() == 'customer' or userMenu() == 'barang') {
+        $result = 'menu-is-opening menu-open';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
+function menuSupplier()
+{
+    if (userMenu() == 'supplier') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
+function menuCustomer()
+{
+    if (userMenu() == 'customer') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
 }
