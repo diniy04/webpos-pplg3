@@ -68,7 +68,7 @@ if (isset($_POST['koreksi'])) {
           </div>
           <div class="card-body">
             <div class="row">
-              <input type="hidden" name="id" value="<?= $Customer['id_supplier']; ?>">
+              <input type="hidden" name="id" value="<?= $Customer['id_customer']; ?>">
               <div class="col-lg-8 mb-3">
                 <div class="form-group">
                   <label for="name">Nama</label>
